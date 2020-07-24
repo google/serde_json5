@@ -4,8 +4,6 @@ use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 
-mod common;
-
 use crate::common::{
     deserializes_to, deserializes_to_nan_f32, deserializes_to_nan_f64, deserializes_with_error,
     make_error,
@@ -463,11 +461,7 @@ fn deserializes_seq() {
     deserializes_to("[1, 2, 3]", vec![1, 2, 3]);
     deserializes_to(
         "[42, true, 'hello']",
-        vec![
-            Val::Number(42.),
-            Val::Bool(true),
-            Val::String("hello".to_owned()),
-        ],
+        vec![Val::Number(42.), Val::Bool(true), Val::String("hello".to_owned())],
     );
 }
 

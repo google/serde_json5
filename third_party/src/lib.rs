@@ -47,7 +47,7 @@
 //! ";
 //!
 //! assert_eq!(
-//!     json5::from_str(config),
+//!     serde_json5::from_str(config),
 //!     Ok(Config {
 //!         message: "hello world".to_string(),
 //!         n: 42,
@@ -78,7 +78,7 @@
 //! }
 //!
 //! assert_eq!(
-//!     json5::to_string(&vec![
+//!     serde_json5::to_string(&vec![
 //!         Val::Number(42.),
 //!         Val::Bool(true),
 //!         Val::String("hello".to_owned()),
