@@ -47,6 +47,18 @@ impl From<pest::error::Error<Rule>> for Error {
     }
 }
 
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::Message { msg: err.to_string(), location: None}
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(err: std::str::Utf8Error) -> Self {
+        Error::Message { msg: err.to_string(), location: None}
+    }
+}
+
 impl ser::Error for Error {
     fn custom<T: Display>(msg: T) -> Self {
         Error::Message { msg: msg.to_string(), location: None }
