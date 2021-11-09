@@ -6,6 +6,7 @@ use serde::forward_to_deserialize_any;
 use std::char;
 use std::collections::VecDeque;
 use std::f64;
+use std::io::Read;
 
 use crate::error::{self, Error, Result};
 
@@ -147,6 +148,31 @@ where
     let mut deserializer = Deserializer::from_str(s)?;
     T::deserialize(&mut deserializer)
 }
+
+/// Deserialize an instance of type `T` from a slice of JSON5 text. Can fail if the input is
+/// invalid JSON5, or doesn&rsquo;t match the structure of the target type.
+pub fn from_slice<'a, T>(s: &'a [u8]) -> Result<T>
+where
+    T: de::Deserialize<'a>,
+{
+    let valid_utf8 = std::str::from_utf8(s)?;
+    let mut deserializer = Deserializer::from_str(valid_utf8)?;
+    T::deserialize(&mut deserializer)
+}
+
+
+/// Deserialize an instance of type `T` from any implementation of Read.  Can fail if the input is
+/// invalid JSON5, or doesn&rsquo;t match the structure of the target type.
+pub fn from_reader<T, R>(reader: &mut R) -> Result<T>
+where
+    T: serde::de::DeserializeOwned,
+    R: Read
+{
+    let mut data = String::default();
+    reader.read_to_string(&mut data)?;
+    from_str(&data)
+}
+
 
 struct Deserializer<'de> {
     pair: Option<Pair<'de, Rule>>,

@@ -122,6 +122,6 @@ mod de;
 mod error;
 mod ser;
 
-pub use crate::de::from_str;
+pub use crate::de::{from_str, from_slice, from_reader};
 pub use crate::error::{Error, Location, Result};
 pub use crate::ser::to_string;

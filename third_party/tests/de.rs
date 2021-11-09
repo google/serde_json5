@@ -758,3 +758,43 @@ fn deserializes_parse_error() {
         make_error("invalid type: integer `42`, expected a boolean", 2, 2),
     );
 }
+
+#[test]
+fn test_from_str() {
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct S {
+        a: i32,
+        b: i32,
+        c: i32,
+    }
+
+    let data = "{ a: 5, b: 4, c: 3}";
+    assert_eq!(serde_json5::from_str(data), Ok(S{ a: 5, b:4, c:3}))
+}
+
+#[test]
+fn test_from_slice() {
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct S {
+        a: i32,
+        b: i32,
+        c: i32,
+    }
+
+    let data = "{ a: 5, b: 4, c: 3}".as_bytes();
+    assert_eq!(serde_json5::from_slice(data), Ok(S{ a: 5, b:4, c:3}))
+}
+
+#[test]
+fn test_from_reader() {
+    #[derive(Deserialize, PartialEq, Debug)]
+    struct S {
+        a: i32,
+        b: i32,
+        c: i32,
+    }
+
+    let data = "{ a: 5, b: 4, c: 3}";
+    let mut reader = std::io::Cursor::new(data);
+    assert_eq!(serde_json5::from_reader(&mut reader), Ok(S{ a: 5, b:4, c:3}))
+}
