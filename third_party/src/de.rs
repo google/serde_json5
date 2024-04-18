@@ -162,7 +162,7 @@ where
 
 /// Deserialize an instance of type `T` from any implementation of Read.  Can fail if the input is
 /// invalid JSON5, or doesn&rsquo;t match the structure of the target type.
-pub fn from_reader<T, R>(reader: &mut R) -> Result<T>
+pub fn from_reader<R, T>(mut reader: R) -> Result<T>
 where
     T: serde::de::DeserializeOwned,
     R: Read,
