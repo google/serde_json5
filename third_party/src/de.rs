@@ -598,7 +598,11 @@ impl<'de> de::VariantAccess<'de> for Variant<'de> {
     type Error = Error;
 
     fn unit_variant(self) -> Result<()> {
-        Ok(())
+        if let Some(pair) = self.pair {
+            serde::Deserialize::deserialize(&mut Deserializer::from_pair(pair))
+        } else {
+            Ok(())
+        }
     }
 
     fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value>
