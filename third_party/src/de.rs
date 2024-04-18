@@ -172,6 +172,7 @@ where
     from_str(&data)
 }
 
+/// A Deserializes JSON data into a Rust value.
 pub struct Deserializer<'de> {
     pair: Option<Pair<'de, Rule>>,
 }
