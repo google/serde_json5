@@ -722,6 +722,8 @@ fn deserializes_enum_error() {
 
     deserializes_with_error::<S>("{ e: 'A' }", make_error("expected an object", 1, 6));
     deserializes_with_error::<S>("{ e: 'B' }", make_error("expected an array", 1, 6));
+    deserializes_with_error::<S>("{ e: { 'A': 5 } }", make_error("expected an object", 1, 6));
+    deserializes_with_error::<S>("{ e: { 'B': 5 } }", make_error("expected an array", 1, 6));
     deserializes_with_error::<E>(
         "\n 'C'",
         make_error("unknown variant `C`, expected `A` or `B`", 2, 2),
