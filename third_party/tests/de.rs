@@ -699,6 +699,7 @@ fn deserializes_enum() {
     }
 
     deserializes_to("'A'", E::A);
+    deserializes_to("{ A: null }", E::A);
     deserializes_to("{ B: 2 }", E::B(2));
     deserializes_to("{ C: [3, 5] }", E::C(3, 5));
     deserializes_to("{ D: { a: 7, b: 11 } }", E::D { a: 7, b: 11 });
