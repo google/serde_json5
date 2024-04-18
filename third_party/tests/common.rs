@@ -28,14 +28,6 @@ where
 }
 
 #[allow(unused)]
-pub fn serializes_to<T>(v: T, s: &'static str)
-where
-    T: ::std::fmt::Debug + ::std::cmp::PartialEq + serde::ser::Serialize,
-{
-    assert_matches!(serde_json5::to_string::<T>(&v), Ok(value) if value == s);
-}
-
-#[allow(unused)]
 pub fn make_error(msg: impl Into<String>, line: usize, column: usize) -> Error {
     Error::Message {
         msg: msg.into(),
