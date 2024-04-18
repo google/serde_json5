@@ -37,5 +37,8 @@ where
 
 #[allow(unused)]
 pub fn make_error(msg: impl Into<String>, line: usize, column: usize) -> Error {
-    Error::Message { msg: msg.into(), location: Some(Location { line, column }) }
+    Error::Message {
+        msg: msg.into(),
+        location: Some(Location { line, column }),
+    }
 }

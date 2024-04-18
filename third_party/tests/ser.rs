@@ -161,7 +161,11 @@ fn serializes_seq() {
 
     serializes_to(vec![1, 2, 3], "[1,2,3]");
     serializes_to(
-        vec![Val::Number(42.), Val::Bool(true), Val::String("hello".to_owned())],
+        vec![
+            Val::Number(42.),
+            Val::Bool(true),
+            Val::String("hello".to_owned()),
+        ],
         "[42,true,\"hello\"]",
     )
 }
