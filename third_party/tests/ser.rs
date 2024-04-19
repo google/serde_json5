@@ -71,9 +71,9 @@ fn serializes_f32() {
     let x: f32 = 42.42;
     serializes_to!(x, "42.42");
 
-    serializes_to!(std::f32::INFINITY, "Infinity");
-    serializes_to!(std::f32::NEG_INFINITY, "-Infinity");
-    serializes_to!(std::f32::NAN, "NaN");
+    serializes_to!(f32::INFINITY, "Infinity");
+    serializes_to!(f32::NEG_INFINITY, "-Infinity");
+    serializes_to!(f32::NAN, "NaN");
 }
 
 #[test]
@@ -81,9 +81,9 @@ fn serializes_f64() {
     let x: f64 = 42.42;
     serializes_to!(x, "42.42");
 
-    serializes_to!(std::f64::INFINITY, "Infinity");
-    serializes_to!(std::f64::NEG_INFINITY, "-Infinity");
-    serializes_to!(std::f64::NAN, "NaN");
+    serializes_to!(f64::INFINITY, "Infinity");
+    serializes_to!(f64::NEG_INFINITY, "-Infinity");
+    serializes_to!(f64::NAN, "NaN");
 }
 
 #[test]
