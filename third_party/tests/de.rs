@@ -291,7 +291,10 @@ fn deserializes_f64() {
 
     error_struct!(f64, visit_f64, deserialize_f64);
     deserializes_with_error::<A>("\n 42", make_error("oops", 2, 2));
-    deserializes_with_error::<f64>("\n 1e309", make_error("error parsing number: too large", 2, 2));
+    deserializes_with_error::<f64>(
+        "\n 1e309",
+        make_error("error parsing number: too large", 2, 2),
+    );
 }
 
 #[test]
@@ -461,7 +464,11 @@ fn deserializes_seq() {
     deserializes_to("[1, 2, 3]", vec![1, 2, 3]);
     deserializes_to(
         "[42, true, 'hello']",
-        vec![Val::Number(42.), Val::Bool(true), Val::String("hello".to_owned())],
+        vec![
+            Val::Number(42.),
+            Val::Bool(true),
+            Val::String("hello".to_owned()),
+        ],
     );
 }
 
@@ -574,7 +581,11 @@ fn deserializes_tuple_error() {
     struct B(i32, f64);
     deserializes_with_error::<B>(
         "\n [1]",
-        make_error("invalid length 1, expected tuple struct B with 2 elements", 2, 2),
+        make_error(
+            "invalid length 1, expected tuple struct B with 2 elements",
+            2,
+            2,
+        ),
     );
 }
 
@@ -769,7 +780,7 @@ fn test_from_str() {
     }
 
     let data = "{ a: 5, b: 4, c: 3}";
-    assert_eq!(serde_json5::from_str(data), Ok(S{ a: 5, b:4, c:3}))
+    assert_eq!(serde_json5::from_str(data), Ok(S { a: 5, b: 4, c: 3 }))
 }
 
 #[test]
@@ -782,7 +793,7 @@ fn test_from_slice() {
     }
 
     let data = "{ a: 5, b: 4, c: 3}".as_bytes();
-    assert_eq!(serde_json5::from_slice(data), Ok(S{ a: 5, b:4, c:3}))
+    assert_eq!(serde_json5::from_slice(data), Ok(S { a: 5, b: 4, c: 3 }))
 }
 
 #[test]
@@ -796,5 +807,8 @@ fn test_from_reader() {
 
     let data = "{ a: 5, b: 4, c: 3}";
     let mut reader = std::io::Cursor::new(data);
-    assert_eq!(serde_json5::from_reader(&mut reader), Ok(S{ a: 5, b:4, c:3}))
+    assert_eq!(
+        serde_json5::from_reader(&mut reader),
+        Ok(S { a: 5, b: 4, c: 3 })
+    )
 }
