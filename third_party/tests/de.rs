@@ -214,7 +214,7 @@ fn deserializes_i64() {
 
     error_struct!(i64, visit_i64, deserialize_i64);
     deserializes_with_error::<A>("\n 42", make_error("oops", 2, 2));
-    let over_i64 = format!("\n {}0", i64::max_value());
+    let over_i64 = format!("\n {}0", i64::MAX);
     deserializes_with_error::<serde_json::Value>(
         over_i64.as_str(),
         make_error("error parsing integer", 2, 2),
@@ -237,8 +237,8 @@ fn deserializes_u64() {
     deserializes_to(".42e2", x);
     deserializes_to("0.42e2", x);
 
-    deserializes_to("Infinity", std::f32::INFINITY);
-    deserializes_to("-Infinity", std::f32::NEG_INFINITY);
+    deserializes_to("Infinity", f32::INFINITY);
+    deserializes_to("-Infinity", f32::NEG_INFINITY);
     deserializes_to_nan_f32("NaN");
 
     error_struct!(u64, visit_u64, deserialize_u64);
@@ -261,8 +261,8 @@ fn deserializes_f32() {
     deserializes_to("-.4242e2", -x);
     deserializes_to("-0.4242e2", -x);
 
-    deserializes_to("Infinity", std::f32::INFINITY);
-    deserializes_to("-Infinity", std::f32::NEG_INFINITY);
+    deserializes_to("Infinity", f32::INFINITY);
+    deserializes_to("-Infinity", f32::NEG_INFINITY);
     deserializes_to_nan_f32("NaN");
 
     error_struct!(f32, visit_f32, deserialize_f32);
@@ -285,8 +285,8 @@ fn deserializes_f64() {
     deserializes_to("-.4242e2", -x);
     deserializes_to("-0.4242e2", -x);
 
-    deserializes_to("Infinity", std::f64::INFINITY);
-    deserializes_to("-Infinity", std::f64::NEG_INFINITY);
+    deserializes_to("Infinity", f64::INFINITY);
+    deserializes_to("-Infinity", f64::NEG_INFINITY);
     deserializes_to_nan_f64("NaN");
 
     error_struct!(f64, visit_f64, deserialize_f64);
@@ -688,6 +688,7 @@ fn deserializes_struct_error() {
 #[test]
 fn deserializes_enum() {
     #[derive(Deserialize, PartialEq, Debug)]
+    #[allow(clippy::enum_variant_names)]
     enum E {
         A,
         B(i32),
