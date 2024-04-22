@@ -1,6 +1,6 @@
 [package]
 name = "serde_json5"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Gary Bressler <geb@google.com>"]
 description = "A Serde (de)serializer for JSON5."
 license = "Apache-2.0"

@@ -1,4 +1,3 @@
-use matches::assert_matches;
 use serde_json5::{Error, Location};
 
 #[allow(unused)]
@@ -6,17 +5,17 @@ pub fn deserializes_to<'a, T>(s: &'a str, v: T)
 where
     T: ::std::fmt::Debug + ::std::cmp::PartialEq + serde::de::Deserialize<'a>,
 {
-    assert_matches!(serde_json5::from_str::<T>(s), Ok(value) if value == v);
+    assert_eq!(serde_json5::from_str::<T>(s), Ok(v));
 }
 
 #[allow(unused)]
 pub fn deserializes_to_nan_f32(s: &str) {
-    assert_matches!(serde_json5::from_str::<f32>(s), Ok(value) if value.is_nan());
+    assert!(serde_json5::from_str::<f32>(s).unwrap().is_nan());
 }
 
 #[allow(unused)]
 pub fn deserializes_to_nan_f64(s: &str) {
-    assert_matches!(serde_json5::from_str::<f64>(s), Ok(value) if value.is_nan());
+    assert!(serde_json5::from_str::<f64>(s).unwrap().is_nan());
 }
 
 #[allow(unused)]
@@ -24,7 +23,7 @@ pub fn deserializes_with_error<'a, T>(s: &'a str, error_expected: Error)
 where
     T: ::std::fmt::Debug + ::std::cmp::PartialEq + serde::de::Deserialize<'a>,
 {
-    assert_matches!(serde_json5::from_str::<T>(s), Err(e) if e == error_expected);
+    assert_eq!(serde_json5::from_str::<T>(s), Err(error_expected));
 }
 
 #[allow(unused)]
