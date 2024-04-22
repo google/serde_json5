@@ -725,8 +725,14 @@ fn deserializes_enum_error() {
     deserializes_with_error::<S>("{ e: 'B' }", make_error("expected an array", 1, 6));
     deserializes_with_error::<S>("{ e: { 'A': 5 } }", make_error("expected an object", 1, 6));
     deserializes_with_error::<S>("{ e: { 'B': 5 } }", make_error("expected an array", 1, 6));
-    deserializes_with_error::<S>("{ e: { 'C': 5 } }", make_error("invalid type: integer `5`, expected unit", 1, 13));
-    deserializes_with_error::<S>("{ e: { 'C': {} } }", make_error("invalid type: map, expected unit", 1, 13));
+    deserializes_with_error::<S>(
+        "{ e: { 'C': 5 } }",
+        make_error("invalid type: integer `5`, expected unit", 1, 13),
+    );
+    deserializes_with_error::<S>(
+        "{ e: { 'C': {} } }",
+        make_error("invalid type: map, expected unit", 1, 13),
+    );
     deserializes_with_error::<E>(
         "\n 'D'",
         make_error("unknown variant `D`, expected one of `A`, `B`, `C`", 2, 2),
