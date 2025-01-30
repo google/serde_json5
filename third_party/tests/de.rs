@@ -1,6 +1,7 @@
 use serde::de;
 use serde_derive::Deserialize;
 
+use core::f64;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -660,6 +661,108 @@ fn deserializes_map_error() {
     }
 
     deserializes_with_error::<A>("\n { 'a': true }", make_error("oops", 2, 2));
+}
+
+#[test]
+fn deserialize_any_ieee_754_f64() {
+    #[derive(Deserialize)]
+    struct Data {
+        pos_inf: f64,
+        neg_inf: f64,
+        pos_nan: f64,
+        neg_nan: f64,
+    }
+
+    #[derive(Deserialize)]
+    #[serde(tag = "type", content = "data")]
+    enum Val {
+        #[serde(rename = "one")]
+        One {
+            other: Box<Val>,
+            #[serde(flatten)]
+            data: Data,
+        },
+        #[serde(rename = "two")]
+        Two,
+    }
+
+    let raw = r#"
+    {
+        "type": "one",
+        "data": {
+            "other": {
+                "type": "two"
+            },
+            "pos_inf": Infinity,
+            "neg_inf": -Infinity,
+            "pos_nan": NaN,
+            "neg_nan": -NaN,
+        }
+    }
+    "#;
+
+    let val: Val = serde_json5::from_str(raw).unwrap();
+    match val {
+        Val::One { other, data } => {
+            assert!(matches!(other.as_ref(), Val::Two));
+            assert_eq!(data.pos_inf, f64::INFINITY);
+            assert_eq!(data.neg_inf, f64::NEG_INFINITY);
+            assert!(data.pos_nan.is_nan());
+            assert!(data.neg_nan.is_nan());
+        }
+        _ => unreachable!(),
+    }
+}
+
+#[test]
+fn deserialize_any_ieee_754_f32() {
+    #[derive(Deserialize)]
+    struct Data {
+        pos_inf: f32,
+        neg_inf: f32,
+        pos_nan: f32,
+        neg_nan: f32,
+    }
+
+    #[derive(Deserialize)]
+    #[serde(tag = "type", content = "data")]
+    enum Val {
+        #[serde(rename = "one")]
+        One {
+            other: Box<Val>,
+            #[serde(flatten)]
+            data: Data,
+        },
+        #[serde(rename = "two")]
+        Two,
+    }
+
+    let raw = r#"
+    {
+        "type": "one",
+        "data": {
+            "other": {
+                "type": "two"
+            },
+            "pos_inf": Infinity,
+            "neg_inf": -Infinity,
+            "pos_nan": NaN,
+            "neg_nan": -NaN,
+        }
+    }
+    "#;
+
+    let val: Val = serde_json5::from_str(raw).unwrap();
+    match val {
+        Val::One { other, data } => {
+            assert!(matches!(other.as_ref(), Val::Two));
+            assert_eq!(data.pos_inf, f32::INFINITY);
+            assert_eq!(data.neg_inf, f32::NEG_INFINITY);
+            assert!(data.pos_nan.is_nan());
+            assert!(data.neg_nan.is_nan());
+        }
+        _ => unreachable!(),
+    }
 }
 
 #[test]
