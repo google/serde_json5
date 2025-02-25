@@ -6,8 +6,8 @@ description = "A Serde (de)serializer for JSON5."
 license = "Apache-2.0"
 repository = "https://github.com/google/serde_json5"
 readme = "README.md"
-keywords = ["json5", "json", "serialize", "serializer", "deserialize", "deserializer", "parse", "parser"]
-edition = "2018"
+keywords = ["json5", "json", "serde", "serialization"]
+edition = "2021"
 
 [lib]
 name = "serde_json5"
