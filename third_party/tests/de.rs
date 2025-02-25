@@ -394,7 +394,7 @@ fn deserializes_unit_error() {
             D: de::Deserializer<'de>,
         {
             struct Visitor;
-            impl<'de> de::Visitor<'de> for Visitor {
+            impl de::Visitor<'_> for Visitor {
                 type Value = A;
                 fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     f.write_str("...")

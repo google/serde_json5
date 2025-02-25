@@ -1,5 +1,7 @@
 use serde::ser::{self, Serialize};
-use std::{f32, f64};
+use std::fmt::Display;
+use std::io::Write;
+use std::{f32, f64, io};
 
 use crate::error::{Error, Result};
 
@@ -8,29 +10,78 @@ pub fn to_string<T>(value: &T) -> Result<String>
 where
     T: Serialize,
 {
-    let mut serializer = Serializer {
-        output: String::new(),
-    };
+    let mut serializer = Serializer::new(Vec::<u8>::new());
     value.serialize(&mut serializer)?;
-    Ok(serializer.output)
+    let output = String::from_utf8(serializer.take_output())?;
+    Ok(output)
 }
 
-struct Serializer {
-    output: String,
+/// Attempts to serialize the input as JSON5 string into the I/O stream.
+pub fn to_writer<W, T>(writer: W, value: &T) -> Result<()>
+where
+    W: io::Write,
+    T: ?Sized + Serialize,
+{
+    let mut ser = Serializer::new(writer);
+    value.serialize(&mut ser)
+}
+
+struct Serializer<W> {
+    output: InnerWriter<W>,
     // TODO settings for formatting (single vs double quotes, whitespace etc)
 }
 
-impl Serializer {
-    fn call_to_string<T>(&mut self, v: &T) -> Result<()>
+impl<W> Serializer<W> {
+    fn new(writer: W) -> Self {
+        Self {
+            output: InnerWriter {
+                writer,
+                last_byte: 0,
+            },
+        }
+    }
+
+    fn take_output(self) -> W {
+        self.output.writer
+    }
+}
+
+struct InnerWriter<W> {
+    writer: W,
+    last_byte: u8,
+}
+
+impl<W> InnerWriter<W> {
+    fn ends_with(&self, c: char) -> bool {
+        self.last_byte == (c as u8)
+    }
+}
+
+impl<W: io::Write> io::Write for InnerWriter<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let written = self.writer.write(buf)?;
+        if written > 0 {
+            self.last_byte = buf[written - 1];
+        }
+        Ok(written)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.writer.flush()
+    }
+}
+
+impl<W: io::Write> Serializer<W> {
+    fn write_display<T>(&mut self, v: &T) -> Result<()>
     where
-        T: ToString,
+        T: Display,
     {
-        self.output += &v.to_string();
+        write!(&mut self.output, "{}", v)?;
         Ok(())
     }
 }
 
-impl<'a> ser::Serializer for &'a mut Serializer {
+impl<W: io::Write> ser::Serializer for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -43,63 +94,63 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStructVariant = Self;
 
     fn serialize_bool(self, v: bool) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_i8(self, v: i8) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_i16(self, v: i16) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_i32(self, v: i32) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_i64(self, v: i64) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_u8(self, v: u8) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_u16(self, v: u16) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_u32(self, v: u32) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_u64(self, v: u64) -> Result<()> {
-        self.call_to_string(&v)
+        self.write_display(&v)
     }
 
     fn serialize_f32(self, v: f32) -> Result<()> {
         if v == f32::INFINITY {
-            self.output += "Infinity";
+            self.output.write_all(b"Infinity")?;
         } else if v == f32::NEG_INFINITY {
-            self.output += "-Infinity";
+            self.output.write_all(b"-Infinity")?;
         } else if v.is_nan() {
-            self.output += "NaN";
+            self.output.write_all(b"NaN")?;
         } else {
-            self.call_to_string(&v)?;
+            self.write_display(&v)?;
         }
         Ok(())
     }
 
     fn serialize_f64(self, v: f64) -> Result<()> {
         if v == f64::INFINITY {
-            self.output += "Infinity";
+            self.output.write_all(b"Infinity")?;
         } else if v == f64::NEG_INFINITY {
-            self.output += "-Infinity";
+            self.output.write_all(b"-Infinity")?;
         } else if v.is_nan() {
-            self.output += "NaN";
+            self.output.write_all(b"NaN")?;
         } else {
-            self.call_to_string(&v)?;
+            self.write_display(&v)?;
         }
         Ok(())
     }
@@ -111,9 +162,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_str(self, v: &str) -> Result<()> {
-        self.output += "\"";
-        self.output += &escape(v);
-        self.output += "\"";
+        write!(&mut self.output, "\"{}\"", escape(v))?;
         Ok(())
     }
 
@@ -133,7 +182,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     }
 
     fn serialize_unit(self) -> Result<()> {
-        self.output += "null";
+        self.output.write_all(b"null")?;
         Ok(())
     }
 
@@ -167,16 +216,16 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        self.output += "{";
+        self.output.write_all(b"{")?;
         variant.serialize(&mut *self)?; // TODO drop the quotes where possible
-        self.output += ":";
+        self.output.write_all(b":")?;
         value.serialize(&mut *self)?;
-        self.output += "}";
+        self.output.write_all(b"}")?;
         Ok(())
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
-        self.output += "[";
+        self.output.write_all(b"[")?;
         Ok(self)
     }
 
@@ -199,14 +248,14 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        self.output += "{";
+        self.output.write_all(b"{")?;
         variant.serialize(&mut *self)?;
-        self.output += ":[";
+        self.output.write_all(b":[")?;
         Ok(self)
     }
 
     fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        self.output += "{";
+        self.output.write_all(b"{")?;
         Ok(self)
     }
 
@@ -221,14 +270,14 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        self.output += "{";
+        self.output.write_all(b"{")?;
         variant.serialize(&mut *self)?;
-        self.output += ":{";
+        self.output.write_all(b":{")?;
         Ok(self)
     }
 }
 
-impl<'a> ser::SerializeSeq for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeSeq for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -237,18 +286,18 @@ impl<'a> ser::SerializeSeq for &'a mut Serializer {
         T: ?Sized + Serialize,
     {
         if !self.output.ends_with('[') {
-            self.output += ",";
+            self.output.write_all(b",")?;
         }
         value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        self.output += "]";
+        self.output.write_all(b"]")?;
         Ok(())
     }
 }
 
-impl<'a> ser::SerializeTuple for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeTuple for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -264,7 +313,7 @@ impl<'a> ser::SerializeTuple for &'a mut Serializer {
     }
 }
 
-impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeTupleStruct for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -280,7 +329,7 @@ impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
     }
 }
 
-impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeTupleVariant for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -292,12 +341,12 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
     }
 
     fn end(self) -> Result<()> {
-        self.output += "]}";
+        self.output.write_all(b"]}")?;
         Ok(())
     }
 }
 
-impl<'a> ser::SerializeMap for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeMap for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -306,7 +355,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
         T: ?Sized + Serialize,
     {
         if !self.output.ends_with('{') {
-            self.output += ",";
+            self.output.write_all(b",")?;
         }
         key.serialize(&mut **self)
     }
@@ -315,17 +364,17 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        self.output += ":";
+        self.output.write_all(b":")?;
         value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<()> {
-        self.output += "}";
+        self.output.write_all(b"}")?;
         Ok(())
     }
 }
 
-impl<'a> ser::SerializeStruct for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeStruct for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -342,7 +391,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     }
 }
 
-impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
+impl<W: io::Write> ser::SerializeStructVariant for &mut Serializer<W> {
     type Ok = ();
     type Error = Error;
 
@@ -354,7 +403,7 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
     }
 
     fn end(self) -> Result<()> {
-        self.output += "}}";
+        self.output.write_all(b"}}")?;
         Ok(())
     }
 }

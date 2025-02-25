@@ -233,3 +233,19 @@ fn serializes_enum() {
     serializes_to!(E::C(3, 5), "{\"C\":[3,5]}");
     serializes_to!(E::D { a: 7, b: 11 }, "{\"D\":{\"a\":7,\"b\":11}}");
 }
+
+#[test]
+fn test_to_writer() {
+    #[derive(Serialize)]
+    struct S {
+        a: i32,
+        b: i32,
+        c: i32,
+    }
+
+    let value = S { a: 5, b: 4, c: 3 };
+    let mut writer = Vec::<u8>::new();
+    serde_json5::to_writer(&mut writer, &value).expect("to_writer succeeds");
+    let data = std::str::from_utf8(&writer).expect("valid utf8");
+    assert_eq!(data, r#"{"a":5,"b":4,"c":3}"#);
+}
