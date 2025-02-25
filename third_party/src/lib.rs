@@ -100,7 +100,7 @@
 //! - serializing or deserializing [byte arrays][]
 //!
 //! - specifying the style of JSON5 output from the serializer (single over double quotes, trailing
-//! commas, indentation etc.)
+//!   commas, indentation etc.)
 //!
 //! [JSON]: https://tools.ietf.org/html/rfc7159
 //! [ECMAScript 5.1]: https://www.ecma-international.org/ecma-262/5.1/
@@ -124,4 +124,4 @@ mod ser;
 
 pub use crate::de::{from_reader, from_slice, from_str, Deserializer};
 pub use crate::error::{Error, Location, Result};
-pub use crate::ser::to_string;
+pub use crate::ser::{to_string, to_writer};

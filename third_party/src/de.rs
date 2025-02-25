@@ -136,7 +136,6 @@ unicode_letter = _{
 
 value = _{ null | boolean | string | number | object | array }
 "#]
-
 struct Parser;
 
 /// Deserialize an instance of type `T` from a string of JSON5 text. Can fail if the input is
@@ -191,7 +190,7 @@ impl<'de> Deserializer<'de> {
     }
 }
 
-impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
+impl<'de> de::Deserializer<'de> for &mut Deserializer<'de> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value>
