@@ -470,7 +470,12 @@ fn parse_integer(pair: &Pair<'_, Rule>) -> Result<i64> {
 }
 
 fn is_int(s: &str) -> bool {
-    !s.contains('.') && (is_hex_literal(s) || (!s.contains('e') && !s.contains('E')))
+    !s.contains('.')
+        && (is_hex_literal(s)
+            || (!s.contains('e')
+                && !s.contains('E')
+                && !s.contains("Infinity")
+                && !s.contains("NaN")))
 }
 
 fn parse_hex(s: &str) -> Result<u32> {
